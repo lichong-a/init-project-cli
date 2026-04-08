@@ -119,6 +119,17 @@ OpenSpec 是 SDD 流程的**执行引擎**：
 
 ---
 
+## UI 风格参考 (UI Style Reference)
+
+> 读取时机：需要确定项目 UI 设计风格、编写前端页面或组件时。
+> 此目录为 git submodule，克隆仓库时需使用 `--recurse-submodules`。
+
+| 文档 | 描述 | 引用路径 | 读取时机 |
+|------|------|----------|----------|
+| UI 风格合集 | Awesome Design MD — 收录各类 UI 设计风格 Markdown 描述，用于选择项目整体视觉风格 | [docs/awesome-design-md/README.md](docs/awesome-design-md/README.md) | 确定项目 UI 风格、设计前端页面时 |
+
+---
+
 ## Feature 开发 (Feature Development)
 
 > 读取时机：开始一个新 Feature 开发时，按 PRD → BED → FED → TEST 顺序阅读和编写。
@@ -164,7 +175,7 @@ OpenSpec 是 SDD 流程的**执行引擎**：
 |------|----------|
 | 开始新 Feature | workflow.md → PRD-template.md |
 | 设计后端 API | api-conventions.md → database-conventions.md → BED-template.md |
-| 设计前端页面 | component-patterns.md → state-management.md → FED-template.md |
+| 设计前端页面 | component-patterns.md → state-management.md → awesome-design-md/README.md → FED-template.md |
 | 编写测试 | testing-standards.md → TEST-template.md |
 | 提交代码 | git-workflow.md → review-checklist.md → process-file-management.md |
 | 安全相关 | security-guidelines.md |
