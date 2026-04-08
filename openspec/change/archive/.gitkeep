@@ -1,0 +1,32 @@
+# OpenSpec Change Archive
+
+> 此目录存放已完成并归档的 change。
+
+## 归档规则
+
+- 当一个 change 的所有 task 完成并验证通过后，将整个 change 目录移入 `archive/`
+- 归档目录保持原始结构不变：`archive/<change-name>/`
+- 归档是 append-only，不修改已归档的内容
+
+## 归档结构
+
+```
+archive/
+├── <change-name-1>/
+│   ├── specs/
+│   ├── proposal.md
+│   ├── plan.md
+│   └── task.md
+├── <change-name-2>/
+│   └── ...
+└── README.md          ← 本文件
+```
+
+## 归档命名
+
+归档目录名保持原始 change 名，可选附加完成日期：
+
+```
+archive/user-auth/                     # 原始名
+archive/user-auth--20260408/           # 带完成日期（可选）
+```

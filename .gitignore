@@ -1,0 +1,539 @@
+# =============================================================================
+# Universal .gitignore
+# Covers: Node.js, Python, Java, Go, Rust, C/C++, .NET, Ruby, PHP, Swift,
+#         Kotlin, Scala, Dart/Flutter, Elixir, Haskell, and common process artifacts
+# =============================================================================
+
+# =============================================================================
+# Process / Temporary (项目过程产物)
+# =============================================================================
+tmp/
+temp/
+.tmp/
+.temp/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+*.orig
+*.rej
+
+# =============================================================================
+# OS Generated
+# =============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+.directory
+
+# =============================================================================
+# Editor / IDE
+# =============================================================================
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# JetBrains (IntelliJ / WebStorm / GoLand / PyCharm / RustRover ...)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Vim / Neovim
+*.un~
+Session.vim
+.netrwhist
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+auto-save-list
+tramp
+.\#*
+*.elc
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+*.stTheme.cache
+*.tmTheme.cache
+
+# Cursor
+.cursor/
+
+# Zed
+.zed/
+
+# =============================================================================
+# Node.js / JavaScript / TypeScript
+# =============================================================================
+node_modules/
+.npm
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+.npmrc (if contains tokens)
+
+# Build output
+dist/
+build/
+out/
+.output/
+.nuxt/
+.next/
+.svelte-kit/
+.vercel/
+.netlify/
+.aws/
+.cloudflare/
+
+# Framework specific
+.angular/
+.vuepress/dist/
+.docusaurus/
+.serverless/
+.fusebox/
+.stryker-tmp/
+.nyc_output/
+coverage/
+
+# Bundler cache
+.vite/
+.turbo/
+.webpack/
+.rollup.cache/
+.parcel-cache/
+.esbuild/
+
+# Package lock (keep one, ignore others based on project)
+# pnpm-lock.yaml  # uncomment if using yarn
+# yarn.lock        # uncomment if using pnpm
+# package-lock.json # uncomment if using pnpm/yarn
+
+# =============================================================================
+# Python
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+*.eggs/
+dist/
+build/
+.eggs/
+.Python
+develop-eggs/
+downloads/
+parts/
+var/
+sdist/
+wheels/
+*.whl
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.virtualenv/
+.virtualenvs/
+
+# Python tools
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+nosetests.xml
+coverage.xml
+report.html
+.pytype/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytest_runner/
+.pdm-python
+.pdm-build/
+uv.lock
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_metadata
+
+# =============================================================================
+# Java / JVM
+# =============================================================================
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+.gradletasknamecache
+
+# Spring Boot
+.springBeans/
+.spring-configuration-metadata.json
+
+# Kotlin
+*.class
+*.kt.swp
+.kotlin/
+
+# Scala
+*.class
+*.log
+.bloop/
+.metals/
+bsp/
+
+# Clojure
+.nrepl-port
+.cpcache/
+
+# =============================================================================
+# Go
+# =============================================================================
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+vendor/  # if not using go mod
+go.work
+go.work.sum
+
+# =============================================================================
+# Rust
+# =============================================================================
+target/
+**/*.rs.bk
+Cargo.lock  # for libraries only; keep for binaries
+*.pdb
+
+# =============================================================================
+# C / C++
+# =============================================================================
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+*.bin
+*.map
+*.d
+*.su
+*.i
+*.ii
+*.pch
+*.gch
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+install_manifest.txt
+Makefile
+compile_commands.json
+.cache/
+.ninja_deps
+.ninja_log
+build.ninja
+
+# =============================================================================
+# .NET / C#
+# =============================================================================
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+.vs/
+*.user
+*.suo
+*.cache
+*.dll
+*.pdb
+*.log
+*.meta
+packages/
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# =============================================================================
+# Ruby
+# =============================================================================
+.bundle/
+vendor/bundle/
+*.gem
+ Gemfile.lock  # for gems; keep for apps
+.ruby-version
+.rbenv-vars
+.rspec
+.rake_tasks~
+.rvmrc
+.byebug_history
+log/
+storage/
+tmp/  # already covered above but Rails uses it
+
+# =============================================================================
+# PHP
+# =============================================================================
+/vendor/
+composer.phar
+composer.lock  # for libraries; keep for apps
+.phpunit.result.cache
+.phpcs-cache
+.php-cs-fixer.cache
+psalm.xml
+.phpunit.cache/
+.phpactor.json
+
+# =============================================================================
+# Swift / iOS / macOS
+# =============================================================================
+.build/
+.swiftpm/
+xcuserdata/
+*.xcscmblueips
+*.xccheckout
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+Pods/
+!Podfile.lock
+.build/
+Package.resolved  # for libraries
+
+# =============================================================================
+# Dart / Flutter
+# =============================================================================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+pubspec.lock  # for libraries; keep for apps
+.fvmrc
+.fvm/
+
+# =============================================================================
+# Elixir / Erlang
+# =============================================================================
+/_build/
+/cover/
+/deps/
+/doc/
+/erl_crash.dump
+*.ez
+*.beam
+
+# =============================================================================
+# Haskell
+# =============================================================================
+dist-newstyle/
+.ghc.environment.*
+*.hi
+*.o
+*.hie
+.hie/
+.stack-work/
+cabal.project.local
+cabal.project.local~
+
+# =============================================================================
+# Docker / Containers
+# =============================================================================
+docker-compose.override.yml
+.docker/
+*.dockerignore.bak
+
+# =============================================================================
+# Terraform / IaC
+# =============================================================================
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars.json
+.terraformrc
+terraform.rc
+.terraform.lock.hcl
+
+# =============================================================================
+# Security / Secrets (NEVER commit)
+# =============================================================================
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+.htpasswd
+.htaccess
+credentials.json
+secrets.json
+secret_key_base
+config/secrets.yml
+config/credentials.yml.enc
+config/master.key
+.id_rsa
+id_ed25519
+id_rsa
+known_hosts
+authorized_keys
+.ssh/
+.aws/credentials
+.azure/
+.gcp/
+
+# =============================================================================
+# Logs
+# =============================================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# =============================================================================
+# Database dumps
+# =============================================================================
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.rdb
+*.dump
+*.bak
+dump.rdb
+
+# =============================================================================
+# Archives (usually not needed in repo)
+# =============================================================================
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.bz2
+*.gz
+*.xz
+*.lzma
+
+# =============================================================================
+# Misc tooling
+# =============================================================================
+# GraphQL
+*.graphql.d.ts
+
+# Storybook
+storybook-static/
+
+# Style dictionary
+style-dictionary/build/
+
+# Design tokens
+tokens/build/
+
+# Documentation build
+docs/_build/
+site/
+
+# Code coverage platforms
+codecov/
+.codcov.yml
+.coveralls.yml
+
+# Package registries cache
+.npm/
+.yarn/
+.pnpm-store/
+
+# PWA
+dev-dist/
+sw.js
+workbox-*.js
+
+# Test artifacts
+test-results/
+playwright-report/
+test-report/
+test-coverage/
+reports/
+
+# AI / LLM artifacts
+.claude/
+.aider*
+.cursorrules
+.copilot/
+.promptfoo/
