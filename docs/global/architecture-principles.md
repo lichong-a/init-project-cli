@@ -14,98 +14,54 @@
 ```
 src/
 ├── app/                    # 应用入口与全局配置
-│   ├── main.ts
-│   ├── router.ts
-│   └── App.vue
 ├── modules/                # 按业务域划分的模块
-│   ├── auth/
-│   │   ├── components/     # 该模块的组件
-│   │   ├── composables/    # 该模块的组合式函数
-│   │   ├── services/       # 该模块的 API 调用
-│   │   ├── stores/         # 该模块的状态管理
-│   │   ├── types/          # 该模块的类型定义
-│   │   └── utils/          # 该模块的工具函数
-│   └── user/
+│   └── <domain>/
+│       ├── handlers/       # 请求处理层（Controller/Handler/Action）
+│       ├── services/       # 业务逻辑层
+│       ├── repositories/   # 数据访问层（DAO/Repository）
+│       ├── models/         # 数据模型/实体
+│       └── types/          # 类型定义（如适用）
 ├── shared/                 # 跨模块共享
-│   ├── components/         # 通用 UI 组件
-│   ├── composables/        # 通用组合式函数
-│   ├── services/           # 通用服务
-│   ├── stores/             # 全局状态
+│   ├── utils/              # 通用工具
 │   ├── types/              # 通用类型
-│   └── utils/              # 通用工具
+│   └── constants/          # 通用常量
 └── infrastructure/         # 基础设施
-    ├── http/               # HTTP 客户端配置
+    ├── http/               # HTTP 客户端/服务端配置
     ├── storage/            # 存储抽象
     └── logger/             # 日志抽象
 ```
 
 ## 模块边界规则
 
-```typescript
-// 允许的依赖方向（从上到下）：
-// app → modules → shared → infrastructure
-// modules 之间：禁止直接引用，通过事件/Store 通信
-// shared → infrastructure：允许
-// infrastructure：不依赖任何上层模块
+```
+允许的依赖方向（从上到下）：
+app → modules → shared → infrastructure
+
+modules 之间：禁止直接引用，通过事件/消息总线/接口通信
+shared → infrastructure：允许
+infrastructure：不依赖任何上层模块
 ```
 
 ## 模块通信模式
 
-```typescript
-// 模式一：通过 Store（推荐用于状态共享）
-// modules/auth/stores/auth.ts
-export const useAuthStore = defineStore('auth', () => {
-  const user = ref<User | null>(null)
-  return { user }
-})
-
-// 模式二：通过事件总线（推荐用于一次性通知）
-// shared/utils/eventBus.ts
-export const eventBus = {
-  loginSuccess: createEvent<User>('auth:login-success'),
-  logout: createEvent<void>('auth:logout'),
-}
-
-// 模式三：通过 Composable（推荐用于逻辑复用）
-// shared/composables/useAuth.ts
-export function useAuth() {
-  const store = useAuthStore()
-  return {
-    user: computed(() => store.user),
-    login: store.login,
-    logout: store.logout,
-  }
-}
-```
+| 模式 | 适用场景 | 说明 |
+|------|----------|------|
+| **函数调用/接口** | 同层模块间 | 通过定义良好的接口解耦 |
+| **事件/消息** | 跨模块异步通知 | 发布-订阅模式 |
+| **共享状态** | 状态需要多处读取 | 集中式状态管理 |
+| **依赖注入** | 服务间协作 | 通过 DI 容器或构造函数注入 |
 
 ## 错误边界
 
-```typescript
-// 每个模块应有自己的错误类型
-// modules/auth/types/errors.ts
-export class AuthError extends Error {
-  constructor(
-    message: string,
-    public code: AuthErrorCode,
-    public statusCode?: number,
-  ) {
-    super(message)
-    this.name = 'AuthError'
-  }
-}
+每个模块应有自己的错误类型层次：
 
-// 全局错误处理
-// infrastructure/error/handler.ts
-export function handleError(error: unknown): never {
-  if (error instanceof AuthError) {
-    // 跳转登录页
-  }
-  if (error instanceof NetworkError) {
-    // 显示网络错误提示
-  }
-  // 兜底处理
-  throw error
-}
+```
+AppError（基础）
+├── NetworkError（网络层）
+├── ValidationError（验证层）
+├── BusinessError（业务层）
+├── AuthorizationError（权限层）
+└── <Module>Error（模块特定）
 ```
 
 ## 设计决策记录 (ADR)
@@ -136,4 +92,4 @@ export function handleError(error: unknown): never {
 - [ ] 新增模块符合分层架构
 - [ ] 公共逻辑抽取到 shared
 - [ ] 无跨模块直接引用
-- [ ] 类型定义在模块内部或 shared 中
+- [ ] 依赖方向正确（不违反分层）

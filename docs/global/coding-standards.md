@@ -4,7 +4,7 @@
 
 ## 核心原则
 
-- **不可变性优先**：永远创建新对象，不要修改原对象
+- **不可变性优先**：永远创建新对象/数据结构，不要修改原对象
 - **函数式风格**：纯函数、无副作用、显式数据流
 - **小文件优先**：单文件 200-400 行为佳，上限 800 行
 - **小函数优先**：单函数 <50 行，单一职责
@@ -15,119 +15,97 @@
 
 | 类型 | 格式 | 示例 |
 |------|------|------|
-| 组件 | PascalCase | `UserProfile.vue` |
-| 工具函数 | camelCase | `formatDate.ts` |
-| 类型定义 | camelCase | `userTypes.ts` |
-| 常量 | UPPER_SNAKE | `API_ENDPOINTS.ts` |
-| 测试 | 被测文件名.test | `formatDate.test.ts` |
+| 组件/类文件 | PascalCase 或 camelCase | `UserProfile`, `userProfile` |
+| 工具/函数文件 | camelCase / snake_case | `formatDate`, `format_date` |
+| 类型/接口文件 | 同项目约定 | `userTypes`, `user_types` |
+| 常量文件 | UPPER_SNAKE / 同项目约定 | `API_ENDPOINTS` |
+| 测试文件 | 被测文件名 + test/spec 后缀 | `formatDate.test`, `format_date_spec` |
 
 ### 代码命名
 
-```typescript
-// 变量/函数：camelCase
-const userName = 'test'
-function getUserById(id: string) {}
+```
+变量/函数：camelCase 或 snake_case（跟随语言惯例）
+  - JavaScript/TypeScript/Java: getUserById
+  - Python/Rust/Go: get_user_by_id
 
-// 类/接口/类型：PascalCase
-class UserService {}
-interface UserProfile {}
-type UserRole = 'admin' | 'user'
+类/接口/类型：PascalCase
+  - UserService, UserProfile, UserRole
 
-// 常量：UPPER_SNAKE_CASE
-const MAX_RETRY_COUNT = 3
-const API_BASE_URL = 'https://api.example.com'
+常量：UPPER_SNAKE_CASE
+  - MAX_RETRY_COUNT, API_BASE_URL
 
-// 私有属性：以 _ 开头（仅 class 内部）
-class Cache {
-  private _store: Map<string, unknown>
-}
+布尔变量：is/has/can/should 前缀
+  - isLoading, has_permission, can_edit
 
-// 布尔变量：is/has/can/should 前缀
-const isLoading = true
-const hasPermission = false
+私有成员：遵循语言惯例
+  - Python: _private
+  - Java: private field
+  - Go: 小写开头
+  - Rust: _field（惯例）
 ```
 
-## TypeScript 规范
+## 类型安全
 
-```typescript
-// 优先使用 interface，type 用于联合类型/工具类型
-interface UserProps {
-  id: string
-  name: string
-}
+> 任何语言都应追求类型安全，具体方式因语言而异。
 
-type Status = 'active' | 'inactive'
-type Nullable<T> = T | null
+| 语言 | 类型安全方式 |
+|------|-------------|
+| TypeScript | 严格模式、显式类型注解、避免 `any` |
+| Python | Type Hints + mypy/pyright |
+| Java/Kotlin | 静态类型系统 |
+| Go | 静态类型、显式错误处理 |
+| Rust | 类型系统 + 编译器强制 |
 
-// 显式返回类型（公共函数）
-export function calculateTotal(items: Item[]): number {
-  return items.reduce((sum, item) => sum + item.price, 0)
-}
-
-// 使用 enum 替代魔法值
-enum HttpStatus {
-  OK = 200,
-  NotFound = 404,
-  InternalError = 500,
-}
-
-// 泛型约束
-function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
-  return obj[key]
-}
-```
+**通用规则**：
+- 公共函数必须有参数和返回类型声明
+- 避免"魔法类型"（如 any、Object、interface{}）
+- 使用枚举/常量替代魔法值
+- 泛型/模板用于可复用的类型安全抽象
 
 ## 不可变性实践
 
-```typescript
-// WRONG: 修改原对象
-function addItem(cart: Cart, item: Item): Cart {
-  cart.items.push(item) // MUTATION!
+```
+// 所有语言通用原则：
+// WRONG: 修改原数据
+function addItem(cart, item) {
+  cart.items.push(item)  // MUTATION!
   return cart
 }
 
-// CORRECT: 创建新对象
-function addItem(cart: Cart, item: Item): Cart {
-  return {
-    ...cart,
-    items: [...cart.items, item],
-  }
+// CORRECT: 创建新数据
+function addItem(cart, item) {
+  return { ...cart, items: [...cart.items, item] }
 }
-
-// 数组操作：使用展开运算符或 slice/filter/map
-const added = [...arr, newItem]
-const removed = arr.filter(item => item.id !== targetId)
-const updated = arr.map(item =>
-  item.id === targetId ? { ...item, done: true } : item
-)
 ```
+
+**语言特定实现**：
+- TypeScript/JavaScript: 展开运算符、Object.freeze
+- Python: `@dataclass(frozen=True)`, tuple, `copy.deepcopy`
+- Rust: 所有权系统天然不可变，`mut` 显式标注
+- Go: 值传递、避免指针修改
 
 ## 导入规范
 
-```typescript
-// 分组排序：1. 外部库 → 2. 内部模块 → 3. 类型 → 4. 样式
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+所有语言遵循统一的导入分组顺序：
 
-import { useUserStore } from '@/stores/user'
-import { formatDate } from '@/utils/date'
-
-import type { UserProfile } from '@/types/user'
-
-import './style.css'
+```
+1. 标准库 / 外部依赖
+2. 内部模块
+3. 类型定义
+4. 样式 / 资源（如适用）
 ```
 
 ## 禁止清单
 
 | 禁止项 | 原因 |
 |--------|------|
-| `console.log` | 用正式 logger 替代 |
-| `any` 类型 | 用 `unknown` + 类型守卫 |
+| 调试输出遗留 | 用正式 logger 替代 console.log/print/etc |
+| 动态类型逃逸 | 用 `unknown` + 类型守卫替代 `any`/`Object` |
 | 硬编码值 | 抽取为常量/配置 |
 | 嵌套 > 4 层 | 提前返回/抽取函数 |
 | 魔法数字/字符串 | 定义常量/枚举 |
 | 直接修改参数 | 保持不可变性 |
-| `eval()` / `Function()` | 安全风险 |
+| 动态代码执行 | `eval()` / `exec()` 等安全风险 |
 
 ## 代码质量检查清单
 
@@ -135,7 +113,7 @@ import './style.css'
 - [ ] 函数 <50 行，文件 <800 行
 - [ ] 无深层嵌套（≤4 层）
 - [ ] 错误处理完善
-- [ ] 无 console.log
+- [ ] 无调试输出遗留
 - [ ] 无硬编码值
 - [ ] 使用不可变模式
-- [ ] TypeScript 类型完整
+- [ ] 类型安全（利用语言机制）

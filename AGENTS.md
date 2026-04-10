@@ -211,18 +211,32 @@ OpenSpec 是 SDD 流程的**执行引擎**：
 
 | 文档 | 描述 | 引用路径 | 读取时机 |
 |------|------|----------|----------|
-| 编码标准 | 命名规范、TypeScript 规范、不可变性、禁止清单、代码质量检查 | [docs/global/coding-standards.md](docs/global/coding-standards.md) | 编写任何代码时 |
+| 编码标准 | 命名规范、类型安全、不可变性、禁止清单、代码质量检查 | [docs/global/coding-standards.md](docs/global/coding-standards.md) | 编写任何代码时 |
 | 架构原则 | 项目分层、模块边界、通信模式、错误边界、ADR 模板 | [docs/global/architecture-principles.md](docs/global/architecture-principles.md) | 设计模块结构、创建新模块时 |
 | API 接口规范 | RESTful 设计、统一响应格式、HTTP 客户端封装、Service 层、错误码 | [docs/global/api-conventions.md](docs/global/api-conventions.md) | 设计或实现后端接口时 |
 | 测试标准 | TDD 流程、测试分层、单元/集成/E2E 测试规范、Mock 策略 | [docs/global/testing-standards.md](docs/global/testing-standards.md) | 编写任何测试时 |
 | 安全指南 | 密钥管理、输入验证、XSS/CSRF 防护、认证授权、安全响应协议 | [docs/global/security-guidelines.md](docs/global/security-guidelines.md) | 涉及认证/授权/用户输入时 |
 | Git 工作流 | 分支策略、Commit 规范、PR 流程、Feature 开发流程 | [docs/global/git-workflow.md](docs/global/git-workflow.md) | 创建分支、提交代码、创建 PR 时 |
-| 错误处理 | 错误分类、四层处理模式、异步错误处理、全局兜底 | [docs/global/error-handling.md](docs/global/error-handling.md) | 设计异常场景、编写 try/catch 时 |
-| 状态管理 | 状态分层、Pinia Store 规范、Composable 数据获取、不可变更新 | [docs/global/state-management.md](docs/global/state-management.md) | 设计前端状态、创建 Store 时 |
-| 组件模式 | 组件结构、分类、受控组件、插槽组合、加载/错误/空状态 | [docs/global/component-patterns.md](docs/global/component-patterns.md) | 设计或实现 Vue 组件时 |
+| 错误处理 | 错误分类、四层处理模式、异步错误处理、全局兜底 | [docs/global/error-handling.md](docs/global/error-handling.md) | 设计异常场景、处理异常时 |
+| 状态管理 | 状态分层、Store 规范、异步操作模式、不可变更新、框架映射 | [docs/global/state-management.md](docs/global/state-management.md) | 设计状态管理时 |
+| 组件模式 | 组件结构、分类、受控组件、组合模式、框架映射 | [docs/global/component-patterns.md](docs/global/component-patterns.md) | 设计 UI 组件时 |
 | 数据库规范 | 表/字段命名、表结构模板、数据类型、查询规范、迁移、索引 | [docs/global/database-conventions.md](docs/global/database-conventions.md) | 设计数据模型、编写 SQL 时 |
 | 评审清单 | 代码评审维度、PR 评审流程、Conventional Comments、完成标准 | [docs/global/review-checklist.md](docs/global/review-checklist.md) | 提交代码评审时 |
 | **过程文件管理** | **tmp/ 目录规范、Agent 强约束、提交前清理检查、文件归属判定** | [docs/global/process-file-management.md](docs/global/process-file-management.md) | **每次 Agent 执行任务时、Git 提交前** |
+
+### 语言规则 (Code Language Rules)
+
+> 读取时机：项目确定技术栈后，Agent 应读取对应语言规则文件。
+> 所有全局规范提供通用原则，语言规则提供具体实践。
+
+| 文档 | 描述 | 引用路径 | 读取时机 |
+|------|------|----------|----------|
+| 语言规则索引 | 各语言规则文件说明、扩展方式 | [docs/global/rules/code-language-rule/README.md](docs/global/rules/code-language-rule/README.md) | 确定技术栈时 |
+| TypeScript | 类型系统、ES Modules、async/await、构建工具、框架选择 | [docs/global/rules/code-language-rule/typescript.md](docs/global/rules/code-language-rule/typescript.md) | 使用 TS/JS 时 |
+| Python | Type Hints、Pydantic、FastAPI、ruff、项目结构 | [docs/global/rules/code-language-rule/python.md](docs/global/rules/code-language-rule/python.md) | 使用 Python 时 |
+| Go | 错误处理、并发模式、接口设计、表驱动测试 | [docs/global/rules/code-language-rule/go.md](docs/global/rules/code-language-rule/go.md) | 使用 Go 时 |
+| Rust | 所有权系统、Result 错误处理、async/await、类型设计 | [docs/global/rules/code-language-rule/rust.md](docs/global/rules/code-language-rule/rust.md) | 使用 Rust 时 |
+| Java | 分层架构、异常处理、依赖注入、Spring Boot、JPA | [docs/global/rules/code-language-rule/java.md](docs/global/rules/code-language-rule/java.md) | 使用 Java 时 |
 
 ---
 
@@ -283,6 +297,7 @@ OpenSpec 是 SDD 流程的**执行引擎**：
 
 | 场景 | 必读文档 |
 |------|----------|
+| 确定技术栈 | code-language-rule/README.md → 对应语言规则 |
 | 开始新 Feature | workflow.md → PRD-template.md |
 | 设计后端 API | api-conventions.md → database-conventions.md → BED-template.md |
 | 设计前端页面 | component-patterns.md → state-management.md → awesome-design-md/README.md → FED-template.md |
