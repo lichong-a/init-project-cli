@@ -24,6 +24,7 @@
 - [ ] 数据库规范
 - [ ] 安全指南
 - [ ] 错误处理
+- [ ] 对应语言规则
 
 ---
 
@@ -36,29 +37,27 @@
 | POST | /api/v1/xxx | | 需要/不需要 |
 | GET | /api/v1/xxx | | |
 | PUT | /api/v1/xxx/:id | | |
-| DELETE | /api/v1/xxx/:id | | |
+| DELETE /api/v1/xxx/:id | | |
 
 ### 2.2 接口详细设计
 
 #### POST /api/v1/xxx - [接口描述]
 
 **请求**
-```typescript
-interface CreateXxxInput {
-  name: string       // 名称，必填，2-50 字符
-  type: 'A' | 'B'   // 类型，必填
-  description?: string  // 描述，选填，最多 500 字符
-}
+```
+字段        类型        必填    约束
+name       string      是     2-50 字符
+type       enum(A,B)   是
+description string     否     最多 500 字符
 ```
 
 **成功响应** `200 OK`
-```typescript
-interface CreateXxxResponse {
-  id: string
-  name: string
-  type: 'A' | 'B'
-  createdAt: string
-}
+```
+字段        类型        说明
+id         string      唯一标识
+name       string
+type       enum(A,B)
+createdAt  datetime
 ```
 
 **错误响应**
@@ -78,34 +77,21 @@ interface CreateXxxResponse {
 
 ```sql
 CREATE TABLE xxx (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        VARCHAR(50) NOT NULL,
-  type        VARCHAR(10) NOT NULL,
-  status      VARCHAR(20) NOT NULL DEFAULT 'active',
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  deleted_at  TIMESTAMPTZ NULL,
-
-  CONSTRAINT ck_xxx_type CHECK (type IN ('A', 'B')),
-  CONSTRAINT ck_xxx_status CHECK (status IN ('active', 'inactive'))
+  -- 按数据库规范编写
 );
-
-CREATE INDEX idx_xxx_type ON xxx (type);
-CREATE INDEX idx_xxx_status ON xxx (status);
 ```
 
-### 3.2 数据类型定义
+### 3.2 数据结构定义
 
-```typescript
-interface XxxEntity {
-  id: string
-  name: string
-  type: 'A' | 'B'
-  status: 'active' | 'inactive'
-  createdAt: string
-  updatedAt: string
-}
-```
+> 使用项目选定语言的数据定义方式描述。
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| id | string/UUID | 是 | 自动生成 | 唯一标识 |
+| name | string | 是 | | |
+| status | enum | 是 | active | |
+| createdAt | datetime | 是 | 当前时间 | |
+| updatedAt | datetime | 是 | 当前时间 | |
 
 ### 3.3 数据迁移计划
 > 需要哪些迁移脚本，执行顺序
@@ -164,9 +150,9 @@ interface XxxEntity {
 | 编号 | 测试场景 | 输入 | 预期输出 | 优先级 |
 |------|----------|------|----------|--------|
 | UT-001 | 正常创建 | 合法参数 | 返回创建结果 | P0 |
-| UT-002 | 参数验证失败 | 非法参数 | 抛出 ValidationError | P0 |
-| UT-003 | 重复创建 | 已有名称 | 抛出 BusinessError | P0 |
-| UT-004 | 权限不足 | 无权限用户 | 抛出 AuthorizationError | P1 |
+| UT-002 | 参数验证失败 | 非法参数 | 抛出验证错误 | P0 |
+| UT-003 | 重复创建 | 已有名称 | 抛出业务错误 | P0 |
+| UT-004 | 权限不足 | 无权限用户 | 抛出权限错误 | P1 |
 | UT-005 | 并发创建 | 同时创建 | 正确处理冲突 | P2 |
 
 ### 6.2 Mock 策略
@@ -176,16 +162,13 @@ interface XxxEntity {
 
 ## 7. 文件结构
 
+> 按项目实际架构和选型填写，不预设具体目录。
+
 ```
-modules/xxx/
-├── services/
-│   └── xxxService.ts
-├── stores/
-│   └── xxxStore.ts
-├── types/
-│   └── index.ts
-└── utils/
-    └── xxxHelper.ts
+简述本次变更涉及的文件/模块：
+- 新增：
+- 修改：
+- 删除：
 ```
 
 ---

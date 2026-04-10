@@ -26,188 +26,96 @@ POST   /api/v1/auth/logout
 
 ### 统一响应格式
 
-```typescript
-// 成功响应
-interface ApiResponse<T> {
-  success: true
-  data: T
-  meta?: {
-    total: number
-    page: number
-    limit: number
-    hasNext: boolean
+**成功响应**
+```json
+{
+  "success": true,
+  "data": { ... },
+  "meta": {
+    "total": 100,
+    "page": 1,
+    "limit": 20,
+    "hasNext": true
   }
 }
+```
 
-// 错误响应
-interface ApiError {
-  success: false
-  error: {
-    code: string        // 业务错误码 'USER_NOT_FOUND'
-    message: string     // 用户可读消息
-    details?: Record<string, string[]>  // 字段级错误
+**错误响应**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "USER_NOT_FOUND",
+    "message": "用户可读的错误消息",
+    "details": {
+      "email": ["邮箱格式不正确"]
+    }
   }
 }
 ```
 
 ### 分页参数
 
-```typescript
-interface PaginationParams {
-  page?: number     // 页码，从 1 开始，默认 1
-  limit?: number    // 每页数量，默认 20，最大 100
-  sort?: string     // 排序字段，如 'createdAt:desc'
-}
-
-// 请求示例
-GET /api/v1/users?page=1&limit=20&sort=createdAt:desc&status=active
-```
-
-## HTTP 客户端封装
-
-```typescript
-// infrastructure/http/client.ts
-import type { ApiResponse, ApiError } from '@/types/api'
-
-interface RequestOptions {
-  params?: Record<string, unknown>
-  headers?: Record<string, string>
-  signal?: AbortSignal
-}
-
-class HttpClient {
-  private baseUrl: string
-
-  constructor(baseUrl: string) {
-    this.baseUrl = baseUrl
-  }
-
-  async get<T>(url: string, options?: RequestOptions): Promise<T> {
-    return this.request<T>('GET', url, undefined, options)
-  }
-
-  async post<T>(url: string, data?: unknown, options?: RequestOptions): Promise<T> {
-    return this.request<T>('POST', url, data, options)
-  }
-
-  private async request<T>(
-    method: string,
-    url: string,
-    data?: unknown,
-    options?: RequestOptions,
-  ): Promise<T> {
-    const config: RequestInit = {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...this.getAuthHeaders(),
-        ...options?.headers,
-      },
-      signal: options?.signal,
-    }
-
-    if (data && method !== 'GET') {
-      config.body = JSON.stringify(data)
-    }
-
-    const response = await fetch(`${this.baseUrl}${url}`, config)
-    return this.handleResponse<T>(response)
-  }
-
-  private getAuthHeaders(): Record<string, string> {
-    const token = localStorage.getItem('auth_token')
-    return token ? { Authorization: `Bearer ${token}` } : {}
-  }
-
-  private async handleResponse<T>(response: Response): Promise<T> {
-    const json = await response.json()
-
-    if (!response.ok) {
-      const error: ApiError = json
-      throw new ApiRequestError(
-        error.error.message,
-        error.error.code,
-        response.status,
-      )
-    }
-
-    const result: ApiResponse<T> = json
-    return result.data
-  }
-}
-
-export const apiClient = new HttpClient(import.meta.env.VITE_API_BASE_URL)
-```
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| page | int | 1 | 页码，从 1 开始 |
+| limit | int | 20 | 每页数量，最大 100 |
+| sort | string | | 排序，如 `createdAt:desc` |
 
 ## Service 层规范
 
-```typescript
-// modules/user/services/userService.ts
-import { apiClient } from '@/infrastructure/http/client'
-import type { User, CreateUserInput, UpdateUserInput } from '../types'
+Service 层是 API 调用的唯一出口，所有 HTTP 请求必须通过 Service 封装：
 
-interface UserListParams {
-  page?: number
-  limit?: number
-  status?: string
-}
-
-export const userService = {
-  async list(params: UserListParams): Promise<{ items: User[]; total: number }> {
-    return apiClient.get('/users', { params })
-  },
-
-  async getById(id: string): Promise<User> {
-    return apiClient.get(`/users/${id}`)
-  },
-
-  async create(input: CreateUserInput): Promise<User> {
-    return apiClient.post('/users', input)
-  },
-
-  async update(id: string, input: UpdateUserInput): Promise<User> {
-    return apiClient.patch(`/users/${id}`, input)
-  },
-
-  async remove(id: string): Promise<void> {
-    return apiClient.delete(`/users/${id}`)
-  },
-}
 ```
+Service 层职责：
+├── 封装 HTTP 调用细节（URL 拼接、请求构建）
+├── 处理响应解析（提取 data、转换格式）
+├── 将 HTTP 错误转换为业务错误
+└── 提供类型安全的接口给上层调用
+
+Service 层不负责：
+├── 状态管理（由 Store/调用方管理）
+├── UI 交互（由 Component 管理）
+└── 路由跳转（由调用方决定）
+```
+
+## HTTP 客户端要求
+
+不论使用什么语言/框架，HTTP 客户端必须支持：
+
+| 能力 | 说明 |
+|------|------|
+| 统一基础 URL | 通过配置/环境变量注入 |
+| 自动认证 | Token 自动附加到请求头 |
+| 统一错误处理 | HTTP 错误码 → 业务异常 |
+| 请求取消 | 支持 AbortController / Context 超时 |
+| 请求/响应拦截 | 统一处理日志、重试等 |
 
 ## 错误码规范
 
-```typescript
-// 全局错误码：COMMON_*
-// 认证错误：AUTH_*
-// 用户模块：USER_*
-// 订单模块：ORDER_*
-
-enum ErrorCode {
-  // 通用 1xxx
-  COMMON_VALIDATION_ERROR = 'COMMON_1001',
-  COMMON_NOT_FOUND = 'COMMON_1002',
-  COMMON_CONFLICT = 'COMMON_1003',
-  COMMON_RATE_LIMIT = 'COMMON_1004',
-
-  // 认证 2xxx
-  AUTH_INVALID_CREDENTIALS = 'AUTH_2001',
-  AUTH_TOKEN_EXPIRED = 'AUTH_2002',
-  AUTH_FORBIDDEN = 'AUTH_2003',
-
-  // 用户 3xxx
-  USER_NOT_FOUND = 'USER_3001',
-  USER_EMAIL_EXISTS = 'USER_3002',
-}
 ```
+全局错误码：COMMON_*
+认证错误码：AUTH_*
+用户模块码：USER_*
+订单模块码：ORDER_*
+
+格式：<MODULE>_<NUMBER>
+示例：USER_3001, AUTH_2001, COMMON_1001
+```
+
+| 范围 | 前缀 | 说明 |
+|------|------|------|
+| 通用 | COMMON_1xxx | 验证、404、冲突、限流 |
+| 认证 | AUTH_2xxx | 凭证、Token、权限 |
+| 用户 | USER_3xxx | 用户相关业务错误 |
+| 自定义 | <MODULE>_Nxxx | 按模块分配号段 |
 
 ## API 评审清单
 
 - [ ] URL 符合 RESTful 规范
-- [ ] 响应格式统一（ApiResponse / ApiError）
+- [ ] 响应格式统一（success/data/error）
 - [ ] 分页参数标准化
-- [ ] 错误码遵循编码规范
+- [ ] 错误码遵循编号规范
 - [ ] Service 层封装完整
-- [ ] 请求/响应类型定义完整
 - [ ] 认证 Token 自动注入
-- [ ] 请求取消（AbortSignal）支持
+- [ ] 请求取消支持

@@ -25,6 +25,7 @@
 - [ ] 状态管理
 - [ ] 错误处理
 - [ ] 安全指南
+- [ ] 对应语言规则
 
 ---
 
@@ -40,21 +41,18 @@
 
 ```
 PageLayout
-├── AppHeader
-│   ├── Logo
-│   └── UserMenu
+├── Header
 ├── XxxPage
 │   ├── SearchBar
 │   │   ├── Input
 │   │   └── Button
 │   ├── DataTable
-│   │   ├── TableHeader
 │   │   ├── TableRow (×N)
 │   │   └── Pagination
 │   └── DetailModal
 │       ├── Form
 │       └── ActionBar
-└── AppFooter
+└── Footer
 ```
 
 ### 2.3 布局说明
@@ -87,13 +85,13 @@ PageLayout
 | 点击新增 | click 新增按钮 | 弹出表单弹窗 | |
 | 提交表单 | click 提交按钮 | loading → 成功/失败 | 防重复提交 |
 | 删除 | click 删除按钮 | 确认弹窗 → 删除 | 二次确认 |
-| 搜索 | input + debounce | 请求搜索接口 | 300ms 防抖 |
+| 搜索 | input + debounce | 请求搜索接口 | 防抖 |
 
 ### 3.3 加载与空状态
 
 | 状态 | 展示 |
 |------|------|
-| 首次加载 | 骨架屏 |
+| 首次加载 | 骨架屏 / Loading 指示器 |
 | 加载更多 | 底部 loading |
 | 空数据 | 空状态插图 + 引导文案 |
 | 加载失败 | 错误提示 + 重试按钮 |
@@ -104,32 +102,19 @@ PageLayout
 
 ### 4.1 本地状态（组件内）
 
-```typescript
-// 表单组件
-const form = ref<FormInput>({
-  name: '',
-  type: 'A',
-})
-const loading = ref(false)
-const errors = ref<Record<string, string>>({})
-```
+> 列出需要组件内部管理的状态。
 
-### 4.2 Store 状态（跨组件共享）
+| 状态 | 类型 | 初始值 | 说明 |
+|------|------|--------|------|
+| | | | |
 
-```typescript
-// XxxStore
-interface XxxState {
-  items: XxxItem[]
-  selectedId: string | null
-  loading: boolean
-  error: string | null
-  pagination: {
-    page: number
-    limit: number
-    total: number
-  }
-}
-```
+### 4.2 全局/共享状态
+
+> 列出需要跨组件共享的状态。
+
+| 状态 | 归属 | 类型 | 说明 |
+|------|------|------|------|
+| | | | |
 
 ### 4.3 状态流转图
 
@@ -145,9 +130,9 @@ interface XxxState {
 ### 4.4 数据流向
 
 ```
-API ──▶ Service ──▶ Store ──▶ Composable ──▶ Component
-                                    │              │
-                                    └── ◀── emit ──┘
+API → Service → State → Component
+                    │          │
+                    └── ◀ callback ──┘
 ```
 
 ---
@@ -158,16 +143,13 @@ API ──▶ Service ──▶ Store ──▶ Composable ──▶ Component
 
 | 源组件 | 触发条件 | 目标组件 | 联动效果 |
 |--------|----------|----------|----------|
-| 搜索框 | 输入内容变化 | 列表 | 过滤/重新请求 |
-| 筛选器 | 选项变化 | 列表 | 重新请求 |
-| 表格行 | 选中 | 详情面板 | 展示详情 |
+| | | | |
 
 ### 5.2 页面间联动
 
 | 源页面 | 触发条件 | 目标页面 | 传参方式 |
 |--------|----------|----------|----------|
-| 列表页 | 点击新增 | 表单页 | Router params |
-| 列表页 | 点击编辑 | 表单页 | Router query |
+| | | | |
 
 ---
 
@@ -208,25 +190,13 @@ API ──▶ Service ──▶ Store ──▶ Composable ──▶ Component
 
 ## 8. 文件结构
 
+> 按项目实际架构和选型填写，不预设具体目录。
+
 ```
-modules/xxx/
-├── components/
-│   ├── XxxList.vue
-│   ├── XxxForm.vue
-│   ├── XxxDetail.vue
-│   └── XxxSearch.vue
-├── composables/
-│   ├── useXxxList.ts
-│   └── useXxxForm.ts
-├── services/
-│   └── xxxService.ts
-├── stores/
-│   └── xxxStore.ts
-├── types/
-│   └── index.ts
-└── pages/
-    ├── XxxListPage.vue
-    └── XxxDetailPage.vue
+简述本次变更涉及的文件/模块：
+- 新增：
+- 修改：
+- 删除：
 ```
 
 ---

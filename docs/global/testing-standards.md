@@ -16,140 +16,18 @@ tests/
 ├── unit/                    # 单元测试（70%）
 │   ├── utils/               # 工具函数测试
 │   ├── services/            # 服务层测试
-│   ├── stores/              # Store 测试
-│   └── composables/         # Composable 测试
+│   └── models/              # 模型测试
 ├── integration/             # 集成测试（20%）
 │   ├── api/                 # API 集成测试
 │   └── modules/             # 模块集成测试
 └── e2e/                     # 端到端测试（10%）
-    ├── auth.spec.ts         # 认证流程
-    └── core-flows.spec.ts   # 核心业务流程
+    ├── auth.flow            # 认证流程
+    └── core-flows.flow      # 核心业务流程
 ```
 
 ## 单元测试规范
 
-```typescript
-// tests/unit/utils/formatDate.test.ts
-import { describe, it, expect } from 'vitest'
-import { formatDate } from '@/shared/utils/formatDate'
-
-describe('formatDate', () => {
-  it('应该将 ISO 日期字符串格式化为 YYYY-MM-DD', () => {
-    const input = '2024-01-15T08:30:00Z'
-    const result = formatDate(input)
-    expect(result).toBe('2024-01-15')
-  })
-
-  it('应该处理空值返回默认格式', () => {
-    const result = formatDate(null)
-    expect(result).toBe('--')
-  })
-
-  it('应该在传入无效日期时抛出错误', () => {
-    expect(() => formatDate('invalid')).toThrow('Invalid date')
-  })
-})
-```
-
-## 服务层测试规范
-
-```typescript
-// tests/unit/services/userService.test.ts
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { userService } from '@/modules/user/services/userService'
-
-// Mock HTTP 客户端
-vi.mock('@/infrastructure/http/client', () => ({
-  apiClient: {
-    get: vi.fn(),
-    post: vi.fn(),
-    patch: vi.fn(),
-    delete: vi.fn(),
-  },
-}))
-
-describe('userService', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  describe('list', () => {
-    it('应该正确传递分页参数', async () => {
-      const mockResponse = { items: [], total: 0 }
-      vi.mocked(apiClient.get).mockResolvedValue(mockResponse)
-
-      await userService.list({ page: 2, limit: 10 })
-
-      expect(apiClient.get).toHaveBeenCalledWith('/users', {
-        params: { page: 2, limit: 10 },
-      })
-    })
-  })
-})
-```
-
-## Composable 测试规范
-
-```typescript
-// tests/unit/composables/useCounter.test.ts
-import { describe, it, expect } from 'vitest'
-import { useCounter } from '@/shared/composables/useCounter'
-
-describe('useCounter', () => {
-  it('应该正确初始化计数', () => {
-    const { count } = useCounter(10)
-    expect(count.value).toBe(10)
-  })
-
-  it('应该正确递增', () => {
-    const { count, increment } = useCounter(0)
-    increment()
-    expect(count.value).toBe(1)
-  })
-})
-```
-
-## E2E 测试规范
-
-```typescript
-// tests/e2e/auth.spec.ts
-import { test, expect } from '@playwright/test'
-
-test.describe('认证流程', () => {
-  test('用户可以登录并跳转到首页', async ({ page }) => {
-    await page.goto('/login')
-
-    await page.fill('[data-testid="email-input"]', 'test@example.com')
-    await page.fill('[data-testid="password-input"]', 'password123')
-    await page.click('[data-testid="login-button"]')
-
-    await expect(page).toHaveURL('/')
-    await expect(page.locator('[data-testid="user-menu"]')).toBeVisible()
-  })
-})
-```
-
-## Mock 规范
-
-```typescript
-// 优先使用 MSW 拦截网络请求（集成测试）
-import { setupServer } from 'msw/node'
-import { http, HttpResponse } from 'msw'
-
-export const server = setupServer(
-  http.get('/api/v1/users', () => {
-    return HttpResponse.json({
-      success: true,
-      data: { items: mockUsers, total: 2 },
-    })
-  }),
-)
-
-// 单元测试使用 vi.mock
-vi.mock('@/modules/user/services/userService')
-```
-
-## 测试命名规范
+所有语言统一的测试结构：
 
 ```
 describe('模块名/函数名')
@@ -157,6 +35,74 @@ describe('模块名/函数名')
     it('应该 [预期行为] 当 [条件]')   ← 中文描述
     it('should [expected behavior] when [condition]')  ← 或英文
 ```
+
+**通用测试要素**：
+1. **Arrange**：准备测试数据和环境
+2. **Act**：执行被测函数
+3. **Assert**：验证结果
+
+```
+// 伪代码示例
+test('formatDate should format ISO string to YYYY-MM-DD'):
+  input = '2024-01-15T08:30:00Z'
+  result = formatDate(input)
+  assert result == '2024-01-15'
+
+test('formatDate should handle null input'):
+  result = formatDate(null)
+  assert result == '--'
+
+test('formatDate should throw on invalid input'):
+  assert throws: formatDate('invalid')
+```
+
+## 服务层测试规范
+
+```
+test('userService.list should pass pagination params'):
+  // Arrange
+  mockHttpClient.get returns { items: [], total: 0 }
+
+  // Act
+  userService.list({ page: 2, limit: 10 })
+
+  // Assert
+  verify mockHttpClient.get called with ('/users', { page: 2, limit: 10 })
+```
+
+## E2E 测试规范
+
+使用 Playwright 或类似工具：
+
+```
+test('用户可以登录并跳转到首页'):
+  page.goto('/login')
+  page.fill('[data-testid="email-input"]', 'test@example.com')
+  page.fill('[data-testid="password-input"]', 'password123')
+  page.click('[data-testid="login-button"]')
+
+  assert page.url == '/'
+  assert page.isVisible('[data-testid="user-menu"]')
+```
+
+## Mock 规范
+
+| 原则 | 说明 |
+|------|------|
+| Mock 最小化 | 只 Mock 外部依赖（HTTP、数据库、文件系统） |
+| 不 Mock 被测单元 | 被测函数/类本身不 Mock |
+| Mock 行为不实现 | Mock 返回值，不要在 Mock 里写业务逻辑 |
+| 集成测试优先网络拦截 | 使用 MSW/WireMock 等工具拦截 HTTP |
+
+## 测试框架映射
+
+| 语言 | 单元测试 | 集成测试 | E2E 测试 |
+|------|----------|----------|----------|
+| TypeScript | Vitest / Jest | Vitest + MSW | Playwright |
+| Python | pytest | pytest + httpx | Playwright |
+| Go | testing 包 | httptest | Playwright |
+| Rust | cargo test + rstest | reqwest::test | Playwright |
+| Java | JUnit 5 + Mockito | Testcontainers | Playwright |
 
 ## 测试质量检查清单
 
@@ -167,4 +113,4 @@ describe('模块名/函数名')
 - [ ] 测试命名清晰描述预期行为
 - [ ] 边界条件有覆盖（空值、异常、极限值）
 - [ ] 测试独立运行无依赖
-- [ ] 异步操作正确使用 async/await
+- [ ] 异步操作正确等待
