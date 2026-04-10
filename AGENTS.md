@@ -8,84 +8,184 @@
 ## OpenSpec 规则 (Mandatory)
 
 > **强制遵循**：Agent 在执行任何涉及系统变更的任务时，必须遵循 OpenSpec 工作规范。
-> OpenSpec 是规范驱动开发（SDD）的执行引擎，通过结构化的变更流程确保每个改动可追溯、可审查、可回滚。
+> 参考来源：[Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec)
+
+### 前置条件检查（Agent 每次会话启动时必须执行）
+
+Agent 在开始工作前，必须检查以下前置条件是否满足：
+
+```bash
+# 1. 检查 Node.js 版本（需要 >= 20.19.0）
+node --version
+
+# 2. 检查 OpenSpec CLI 是否已安装
+openspec --version
+
+# 3. 如果未安装，执行全局安装
+npm install -g @fission-ai/openspec@latest
+
+# 4. 检查项目是否已初始化 OpenSpec
+ls openspec/
+
+# 5. 如果未初始化，执行初始化
+openspec init
+
+# 6. 确保 agent instructions 是最新的
+openspec update
+```
+
+**检查清单**：
+
+- [ ] Node.js >= 20.19.0
+- [ ] `openspec` CLI 全局可用
+- [ ] 项目 `openspec/` 目录已初始化
+- [ ] Agent 指令已通过 `openspec update` 更新到最新
 
 ### 目录结构
 
 ```
 openspec/
-├── specs/                                  # 系统规格：声明当前系统如何工作
-│   └── <domain>-spec.md                    # 按领域拆分的系统行为描述
-├── change/                                 # 变更目录
+├── specs/                                  # 系统规格（Source of Truth）：声明当前系统如何工作
+│   ├── README.md                           # Specs 编写说明
+│   └── <domain>/                           # 按领域拆分的系统行为描述
+│       └── spec.md                         # 含 Requirements + Scenarios
+├── change/                                 # 变更目录（Changes）
+│   ├── README.md                           # Change 创建/归档说明
 │   ├── <change-name>/                      # 当前正在执行的 change
-│   │   ├── specs/                          # 本次变更涉及的 spec 变动
-│   │   ├── proposal.md                     # 需求实现提案（拆解需求）
-│   │   ├── plan.md                         # 执行方案（怎么实现）
-│   │   └── task.md                         # 执行步骤节点（具体任务拆解）
+│   │   ├── specs/                          # Delta Specs：声明本次变更涉及的 spec 变动
+│   │   │   └── <domain>/                   # 按领域组织的 delta spec
+│   │   │       └── spec.md                 # ADDED / MODIFIED / REMOVED Requirements
+│   │   ├── proposal.md                     # 需求实现提案（Why + Scope + Approach）
+│   │   ├── design.md                       # 技术设计方案（How + Architecture Decisions）
+│   │   ├── tasks.md                        # 执行步骤清单（Steps with checkboxes）
+│   │   └── .openspec.yaml                  # Change 元数据（可选）
 │   └── archive/                            # 已归档的已完成 change
-│       └── <change-name>/                  # 保持原始结构
+│       └── <date>-<change-name>/           # 带日期前缀的归档目录
 ```
+
+### 核心概念
+
+| 概念 | 说明 |
+|------|------|
+| **Specs** | 系统行为的"真实来源"，描述系统**当前**如何工作，不是实现计划 |
+| **Changes** | 提议的修改，每个 change 一个独立文件夹，可并行存在 |
+| **Delta Specs** | 描述**变更**而非全文重写：ADDED / MODIFIED / REMOVED |
+| **Artifacts** | change 内的文档：proposal → specs → design → tasks |
+| **Archive** | 完成后归档，delta specs 合入主 specs，保留完整上下文 |
+
+### Spec 编写规范
+
+Spec 是**行为契约**，不是实现计划：
+
+```markdown
+# <Domain> Specification
+
+## Purpose
+[这个 spec 描述什么]
+
+## Requirements
+
+### Requirement: [需求名称]
+[系统必须具备的行为，使用 RFC 2119 关键词：SHALL / MUST / SHOULD / MAY]
+
+#### Scenario: [场景名称]
+- GIVEN [前置条件]
+- WHEN [触发操作]
+- THEN [预期结果]
+```
+
+**Delta Spec 格式**（change 内使用）：
+
+```markdown
+# Delta for <Domain>
+
+## ADDED Requirements
+### Requirement: [新增需求]
+[新行为描述]
+#### Scenario: [场景]
+...
+
+## MODIFIED Requirements
+### Requirement: [修改需求]
+[新行为，标注与旧版的差异]
+
+## REMOVED Requirements
+### Requirement: [废弃需求]
+[废弃原因说明]
+```
+
+**Spec 中应避免**：
+- 内部类/函数名
+- 库或框架选择
+- 逐步实现细节（这些属于 `design.md` 或 `tasks.md`）
+
+### Artifact 流程
+
+```
+proposal ──────► specs ──────► design ──────► tasks ──────► implement
+   │               │             │              │
+  why            what           how          steps
++ scope        changes       approach      to take
+```
+
+| Artifact | 职责 | 何时更新 |
+|----------|------|----------|
+| `proposal.md` | Intent + Scope + Approach | 范围变化、意图明确、方案根本性改变 |
+| `specs/` | Delta Specs（ADDED/MODIFIED/REMOVED） | 新发现的行为变更 |
+| `design.md` | 技术方案 + 架构决策 | 实现发现方案不可行、发现更好方案 |
+| `tasks.md` | 实现步骤清单（带 checkbox） | 学习驱动的小调整 |
 
 ### 核心规则
 
 | 规则 | 说明 |
 |------|------|
-| **Spec 先行** | 修改系统行为前，先更新 `openspec/specs/` 或在 change 的 `specs/` 中声明变动 |
-| **Change 驱动** | 任何非 trivial 的改动必须创建一个 change，走 proposal → plan → task 流程 |
-| **proposal.md** | 声明本次变更的需求拆解：改什么、为什么、影响范围 |
-| **plan.md** | 声明执行方案：技术方案、实现路径、风险点 |
-| **task.md** | 声明执行步骤：有序的任务节点列表，每步有明确的完成标准 |
-| **specs/** | 声明本次 change 涉及的系统行为变动，完成后合入 `openspec/specs/` |
-| **归档闭环** | 所有 task 完成并验证后，将 change 移入 `archive/`，并同步更新 `openspec/specs/` |
+| **Spec 先行** | 修改系统行为前，先在 change 的 `specs/` 中声明 Delta Spec |
+| **Change 驱动** | 任何非 trivial 的改动必须创建一个 change |
+| **Delta 优先** | 描述变更而非重写全文，使用 ADDED/MODIFIED/REMOVED |
+| **归档闭环** | 完成后归档，delta 自动合入主 specs |
+| **保持聚焦** | 一个 change = 一个逻辑单元，避免混合不相关改动 |
+
+### 命令速查
+
+| 命令 | 用途 | 使用时机 |
+|------|------|----------|
+| `openspec init` | 初始化项目 OpenSpec | 首次使用 |
+| `openspec update` | 更新 agent 指令到最新 | 升级后或定期执行 |
+| `openspec --version` | 检查版本 | 会话启动时 |
+| `/opsx:propose` | 创建 change + 生成全部规划文档 | 快速路径（推荐） |
+| `/opsx:explore` | 探索问题空间 | 需求不清晰时 |
+| `/opsx:apply` | 按 tasks.md 执行实现 | 规划完成，准备写代码 |
+| `/opsx:verify` | 验证实现是否匹配 specs | 归档前检查 |
+| `/opsx:archive` | 归档 change，合入主 specs | 全部工作完成 |
 
 ### Change 生命周期
 
 ```
-创建 change 目录
+前置条件检查（Node.js + OpenSpec CLI + 项目初始化）
   │
   ▼
-编写 proposal.md（需求拆解，明确变更范围）
+/opsx:propose <change-name>（创建 change + 全部 artifacts）
   │
   ▼
-编写 plan.md（技术方案，确认实现路径）
+/opsx:apply（按 tasks.md 逐步实现）
   │
   ▼
-编写 task.md（任务拆解，列出执行步骤）
+/opsx:verify（验证实现匹配 specs）[可选但推荐]
   │
   ▼
-编写 specs/（声明涉及的 spec 变动）
-  │
-  ▼
-按 task.md 逐步执行实现
-  │
-  ▼
-全部 task 完成 → 验证通过
-  │
-  ▼
-将 specs/ 合入 openspec/specs/
-  │
-  ▼
-将 change 移入 archive/
+/opsx:archive（归档 + delta specs 合入主 specs）
 ```
 
 ### Agent 读取时机
 
 | 时机 | 必读路径 |
 |------|----------|
+| 会话启动 | 执行前置条件检查 |
 | 接到系统变更任务 | `openspec/specs/` → 了解系统当前状态 |
-| 创建新 change | `openspec/change/<name>/` 全部文件 |
-| 执行实现 | `openspec/change/<name>/task.md` → 按步骤执行 |
+| 创建新 change | 先读 `openspec/specs/`，再创建 change |
+| 执行实现 | `openspec/change/<name>/tasks.md` → 按步骤执行 |
 | 提交前检查 | `openspec/change/<name>/specs/` → 确认 spec 同步 |
 | 日常理解系统 | `openspec/specs/` → 系统完整行为描述 |
-
-### 文件模板引用
-
-| 文件 | 模板位置 |
-|------|----------|
-| proposal.md | [docs/feature/templates/PRD-template.md](docs/feature/templates/PRD-template.md)（可精简） |
-| plan.md | 按 change 实际需要编写 |
-| task.md | 按 change 实际需要拆解 |
-| specs/*.md | [openspec/specs/](openspec/specs/) 风格一致 |
 
 ### 与 Feature SDD 流程的关系
 
@@ -94,6 +194,13 @@ OpenSpec 是 SDD 流程的**执行引擎**：
 - `docs/feature/` 的 PRD/BED/FED/TEST 文档定义了**文档规范和模板**
 - `openspec/` 是**实际的变更工作区**，每次 Feature 开发对应一个 change
 - 两者配合：用 docs 的模板写 openspec 的文件，形成完整闭环
+
+| Feature 文档 | OpenSpec Artifact | 对应关系 |
+|-------------|-------------------|----------|
+| PRD（需求） | proposal.md + specs/ | 需求拆解 → Delta Specs |
+| BED（后端设计） | design.md（后端部分） | 技术方案 |
+| FED（前端设计） | design.md（前端部分） | 技术方案 |
+| TEST（测试） | /opsx:verify | 验证实现匹配 specs |
 
 ---
 
@@ -163,10 +270,13 @@ OpenSpec 是 SDD 流程的**执行引擎**：
 ### 开发新 Feature 时的阅读顺序
 
 ```
+0. 前置条件检查 → Node.js + OpenSpec CLI + openspec init
 1. 本文件（AGENTS.md） → 了解有哪些文档可用
-2. docs/feature/workflow.md → 了解完整闭环流程
-3. 按需读取全局规范 → 根据具体任务选择
-4. 按 PRD → BED → FED → TEST 顺序推进
+2. openspec/specs/ → 了解系统当前状态
+3. docs/feature/workflow.md → 了解完整闭环流程
+4. 按需读取全局规范 → 根据具体任务选择
+5. /opsx:propose <change-name> → 创建 change
+6. 按 PRD → BED → FED → TEST 顺序推进（在 change 内）
 ```
 
 ### 常见场景的文档选择
